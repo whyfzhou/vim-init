@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import subprocess
+import os
 import os.path
 import shutil
 
@@ -30,8 +31,11 @@ if git_rev_parse.returncode != 0:
     subprocess.run(['git', 'init'])
     subprocess.run(['git', 'submodule', 'init'])
 
+pmdir = os.getcwd()
 update = read_list('packlist.txt')
 maintained = read_list('maintained.txt')
+os.chdir('../../pack')
+
 for cat in categories:
     to_update = []
     to_add = []
@@ -49,16 +53,15 @@ for cat in categories:
         command = ['git', 'submodule', 'add', git + pack, os.path.join('pack', author, cat, plugin)]
         print(' '.join(command))
         subprocess.run(command)
-        # subprocess.run(['git', 'add', '.gitmodules', os.path.join('pack', author, cat, plugin)])
     for pack in to_remove:
         author, plugin = pack.split('/')
         command = ['git', 'submodule', 'deinit', os.path.join('pack', author, cat, plugin)]
         print(' '.join(command))
         subprocess.run(command)
-        # subprocess.run(['git', 'rm', os.path.join('pack', author, cat, plugin)])
-        # shutil.rmtree(os.path.join('.git/modules/pack', author, cat, plugin))
-    command = ['git', 'submodule', 'update', '--remote', '--merge']
-    print(' '.join(command))
-    subprocess.run(command)
-    # subprocess.run(['git', 'commit'])
+
+command = ['git', 'submodule', 'update', '--remote', '--merge']
+print(' '.join(command))
+subprocess.run(command)
+
+os.chdir(pmdir)
 shutil.copy('packlist.txt', 'maintained.txt')
